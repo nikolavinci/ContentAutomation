@@ -36,6 +36,57 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+
+import requests
+import os
+
+class TelegramApprovalBot:
+    def __init__(self, sites_config: dict):
+        self.bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
+        self.sites_config = sites_config
+        self.last_update_id = 0
+        
+    def poll_approvals(self):
+        if not self.bot_token:
+            return
+            
+        try:
+            endpoint = f"https://api.telegram.org/bot{self.bot_token}/getUpdates?offset={self.last_update_id + 1}&timeout=5"
+            resp = requests.get(endpoint, timeout=10)
+            if resp.status_code == 200:
+                data = resp.json()
+                for update in data.get("result", []):
+                    self.last_update_id = update["update_id"]
+                    msg = update.get("message", {}).get("text", "")
+                    chat_id = update.get("message", {}).get("chat", {}).get("id")
+                    
+                    if msg.lower().startswith("approve"):
+                        parts = msg.split()
+                        if len(parts) >= 2 and parts[1].isdigit():
+                            post_id = int(parts[1])
+                            self._publish_draft(post_id, chat_id)
+        except Exception as e:
+            logger.error(f"Telegram polling failed: {e}")
+
+    def _publish_draft(self, post_id: int, chat_id: int):
+        # We need to find which site has this post. For simplicity, we assume the first site or try all.
+        site_name = list(self.sites_config.keys())[0]
+        site_config = self.sites_config[site_name]
+        
+        url = f"{site_config['rest_api_url']}/posts/{post_id}"
+        auth = (site_config['username'], site_config['password'])
+        try:
+            resp = requests.post(url, json={"status": "publish"}, auth=auth, timeout=10)
+            if resp.status_code == 200:
+                msg = f"✅ Success! Post {post_id} is now LIVE on {site_name}."
+            else:
+                msg = f"❌ Failed to publish Post {post_id}: {resp.text}"
+                
+            requests.post(f"https://api.telegram.org/bot{self.bot_token}/sendMessage", 
+                          json={"chat_id": chat_id, "text": msg})
+        except Exception as e:
+            logger.error(f"Failed to publish draft via Telegram: {e}")
+
 class ContentScheduler:
     """Manages scheduled content publication"""
     
@@ -59,6 +110,17 @@ class ContentScheduler:
     
     def schedule_sites(self, sites_config: dict):
         """Schedule publishing for all sites"""
+        
+        # Add telegram polling job
+        self.tg_bot = TelegramApprovalBot(sites_config)
+        self.scheduler.add_job(
+            self.tg_bot.poll_approvals,
+            'interval',
+            minutes=1,
+            id="telegram_polling",
+            name="Telegram Approval Polling",
+            replace_existing=True
+        )
         
         for site_name, site_config in sites_config.items():
             config = ContentConfig(
