@@ -13,8 +13,11 @@ import json
 import logging
 import argparse
 from datetime import datetime
+from dotenv import load_dotenv
+
+load_dotenv()
 from typing import Dict, List, Optional
-import anthropic
+import openai
 import requests
 from dataclasses import dataclass
 
@@ -41,6 +44,7 @@ class ContentConfig:
     tags: List[str]
     niche: str  # e.g., "tech startups", "sustainable business"
     authors: List[str]  # Byline names
+    provider: str = "openai"  # "openai" or "gemini"
 
 
 @dataclass
@@ -61,13 +65,19 @@ class Article:
 
 
 class ContentGenerator:
-    """Generates article content using Claude API"""
+    """Generates article content using OpenAI or Gemini API"""
     
-    def __init__(self, api_key: str = None):
-        self.client = anthropic.Anthropic(
-            api_key=api_key or os.getenv("ANTHROPIC_API_KEY")
-        )
-        self.model = "claude-opus-4-6"
+    def __init__(self, provider: str = "openai", api_key: str = None):
+        self.provider = provider
+        if self.provider == "openai":
+            self.client = openai.OpenAI(api_key=api_key or os.getenv("OPENAI_API_KEY"))
+            self.model = "gpt-4o"
+        elif self.provider == "gemini":
+            from google import genai
+            self.client = genai.Client(api_key=api_key or os.getenv("GEMINI_API_KEY"))
+            self.model = "gemini-3.7-flash"
+        else:
+            raise ValueError(f"Unknown provider: {self.provider}")
     
     def generate_article(self, config: ContentConfig) -> str:
         """Generate a complete article tailored to the niche"""
@@ -108,15 +118,33 @@ TAGS: [tag1, tag2, tag3]
 
 [Full article in HTML markup]"""
 
-        message = self.client.messages.create(
-            model=self.model,
-            max_tokens=2500,
-            messages=[
-                {"role": "user", "content": prompt}
-            ]
-        )
-        
-        return message.content[0].text
+        if self.provider == "openai":
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "user", "content": prompt}
+                ]
+            )
+            
+            # Log token usage and estimated cost for GPT-4o
+            usage = response.usage
+            if usage:
+                prompt_cost = (usage.prompt_tokens / 1_000_000) * 5.00
+                completion_cost = (usage.completion_tokens / 1_000_000) * 15.00
+                total_cost = prompt_cost + completion_cost
+                
+                logger.info(f"OpenAI Usage - Input: {usage.prompt_tokens} tokens | Output: {usage.completion_tokens} tokens | Total: {usage.total_tokens} tokens")
+                logger.info(f"Estimated Cost for this article: ${total_cost:.4f}")
+            
+            return response.choices[0].message.content
+            
+        elif self.provider == "gemini":
+            response = self.client.models.generate_content(
+                model=self.model,
+                contents=prompt
+            )
+            logger.info("Generated article using Gemini API")
+            return response.text
 
 
 class QualityAssurance:
@@ -326,7 +354,7 @@ class ContentAutomationEngine:
     
     def __init__(self, config: ContentConfig):
         self.config = config
-        self.generator = ContentGenerator()
+        self.generator = ContentGenerator(provider=config.provider)
         self.qa = QualityAssurance()
         self.publisher = WordPressPublisher(config)
     
@@ -434,6 +462,7 @@ def main():
     parser.add_argument("--category-id", type=int, default=1, help="Category ID")
     parser.add_argument("--niche", required=True, help="Content niche")
     parser.add_argument("--authors", nargs="+", required=True, help="Author names")
+    parser.add_argument("--provider", choices=["openai", "gemini"], default="openai", help="AI provider to use")
     parser.add_argument("--dry-run", action="store_true", help="Don't actually publish")
     parser.add_argument("--draft", action="store_true", help="Save as draft for review")
     
@@ -447,7 +476,8 @@ def main():
         category_id=args.category_id,
         tags=["business", "innovation", "international"],
         niche=args.niche,
-        authors=args.authors
+        authors=args.authors,
+        provider=args.provider
     )
     
     engine = ContentAutomationEngine(config)

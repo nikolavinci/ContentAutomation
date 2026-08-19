@@ -14,6 +14,9 @@ import json
 import logging
 import argparse
 import yaml
+from dotenv import load_dotenv
+
+load_dotenv()
 from datetime import datetime, timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -66,7 +69,8 @@ class ContentScheduler:
                 category_id=site_config.get("category_id", 1),
                 tags=site_config.get("tags", ["business", "innovation"]),
                 niche=site_config["niche"],
-                authors=site_config.get("authors", ["Editorial Team"])
+                authors=site_config.get("authors", ["Editorial Team"]),
+                provider=site_config.get("provider", "openai")
             )
             
             # Parse schedule (e.g., "08:00,16:00" for 8am and 4pm)
@@ -186,7 +190,8 @@ def main():
             category_id=site_config.get("category_id", 1),
             tags=site_config.get("tags", []),
             niche=site_config["niche"],
-            authors=site_config.get("authors", [])
+            authors=site_config.get("authors", []),
+            provider=site_config.get("provider", "openai")
         )
         
         engine = ContentAutomationEngine(config)
