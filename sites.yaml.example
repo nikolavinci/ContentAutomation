@@ -1,0 +1,167 @@
+# WordPress Content Automation Configuration
+# Copy this to sites.yaml and fill in your actual credentials
+
+# Global settings (optional)
+global:
+  log_level: INFO
+  batch_mode: false  # Publish multiple articles per run
+  batch_size: 2
+
+# Site configurations
+sites:
+  # Site 1 - Tech/Business News
+  techbiz-news:
+    site_url: "https://techbiz.example.com"
+    rest_api_url: "https://techbiz.example.com/wp-json/wp/v2"
+    username: "automation_user"
+    password: "xxxx-xxxx-xxxx-xxxx"  # Use app-specific password, not your login
+    category_id: 5  # Find this in WordPress > Posts > Categories
+    
+    niche: "technology startups and business innovation"
+    authors:
+      - "Editorial Team"
+      - "Tech Correspondent"
+    
+    tags:
+      - "startup"
+      - "business"
+      - "innovation"
+      - "technology"
+    
+    # When to publish (24h format)
+    publish_times:
+      - "08:00"  # 8 AM
+      - "16:00"  # 4 PM (optional second post)
+    
+    # Content strategy
+    content:
+      min_word_count: 1200
+      target_readability_grade: 9  # Flesch-Kincaid grade
+      include_images: true
+      internal_links: 3  # Link to other posts
+      citations_required: 3  # Minimum expert quotes/sources
+
+  # Site 2 - Entrepreneur Focus
+  entrepreneur-hub:
+    site_url: "https://entrepreneurs.example.com"
+    rest_api_url: "https://entrepreneurs.example.com/wp-json/wp/v2"
+    username: "automation_user"
+    password: "yyyy-yyyy-yyyy-yyyy"
+    category_id: 3
+    
+    niche: "entrepreneurship, business growth, and success stories"
+    authors:
+      - "Business Editor"
+      - "Startup Reporter"
+    
+    tags:
+      - "entrepreneur"
+      - "business"
+      - "growth"
+      - "success"
+    
+    publish_times:
+      - "07:00"
+    
+    content:
+      min_word_count: 1500
+      target_readability_grade: 8
+      include_images: true
+      internal_links: 4
+      citations_required: 4
+
+  # Site 3 - International News
+  global-business:
+    site_url: "https://globalbiz.example.com"
+    rest_api_url: "https://globalbiz.example.com/wp-json/wp/v2"
+    username: "automation_user"
+    password: "zzzz-zzzz-zzzz-zzzz"
+    category_id: 2
+    
+    niche: "international business news, trade, and global markets"
+    authors:
+      - "International Correspondent"
+      - "Global News Team"
+    
+    tags:
+      - "international"
+      - "business"
+      - "trade"
+      - "markets"
+    
+    publish_times:
+      - "09:00"
+    
+    content:
+      min_word_count: 1200
+      target_readability_grade: 9
+      include_images: true
+      internal_links: 3
+      citations_required: 5  # International stories need strong sourcing
+
+  # Site 4 - Industry Focus
+  industry-insights:
+    site_url: "https://industries.example.com"
+    rest_api_url: "https://industries.example.com/wp-json/wp/v2"
+    username: "automation_user"
+    password: "wwww-wwww-wwww-wwww"
+    category_id: 4
+    
+    niche: "industry trends, manufacturing, supply chain, and logistics"
+    authors:
+      - "Industry Analyst"
+      - "Supply Chain Expert"
+    
+    tags:
+      - "industry"
+      - "manufacturing"
+      - "supply-chain"
+      - "logistics"
+    
+    publish_times:
+      - "10:00"
+    
+    content:
+      min_word_count: 1300
+      target_readability_grade: 10
+      include_images: true
+      internal_links: 4
+      citations_required: 4
+
+
+# Monitoring and Alerts
+monitoring:
+  # Log publish results
+  log_file: "publish_log.jsonl"
+  
+  # Alert on failures (optional)
+  alerts:
+    enabled: true
+    # email:
+    #   to: "your-email@example.com"
+    #   from: "content-automation@example.com"
+    # slack:
+    #   webhook_url: "https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
+
+
+# Quality Assurance
+qa:
+  # Enable plagiarism checking (requires Copyscape API key)
+  plagiarism_check: true
+  plagiarism_threshold: 20  # Fail if similarity > 20%
+  
+  # Readability checks (Flesch-Kincaid)
+  readability_check: true
+  min_grade: 6
+  max_grade: 14
+  
+  # SEO checks
+  seo_check: true
+  min_keyword_density: 0.5  # 0.5% of words
+  max_keyword_density: 2.5  # 2.5% of words
+
+
+# API Keys (from environment variables)
+# Set these in your .env file:
+# ANTHROPIC_API_KEY=sk-ant-...
+# COPYSCAPE_API_KEY=xxx

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WordPress Content Automation Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; padding: 20px; }
+        .header { max-width: 1200px; margin: 0 auto 30px; }
+        h1 { color: #2c3e50; margin-bottom: 10px; }
+        .timestamp { color: #7f8c8d; font-size: 14px; }
+        
+        .container { max-width: 1200px; margin: 0 auto; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        
+        .card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .card h3 { color: #2c3e50; font-size: 14px; text-transform: uppercase; margin-bottom: 10px; opacity: 0.7; }
+        .card .value { font-size: 32px; font-weight: bold; color: #2c3e50; }
+        .card .change { font-size: 12px; margin-top: 5px; }
+        .change.positive { color: #27ae60; }
+        .change.negative { color: #e74c3c; }
+        
+        .chart-section { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        .chart-wrapper { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .chart-wrapper h3 { color: #2c3e50; margin-bottom: 15px; }
+        
+        .table-section { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        .table-section h3 { color: #2c3e50; margin-bottom: 15px; }
+        
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ecf0f1; }
+        th { background: #f8f9fa; font-weight: 600; color: #2c3e50; }
+        tr:hover { background: #f8f9fa; }
+        
+        .status { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+        .status.published { background: #d4edda; color: #155724; }
+        .status.draft { background: #fff3cd; color: #856404; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        
+        @media (max-width: 768px) {
+            .chart-section { grid-template-columns: 1fr; }
+            .grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📊 WordPress Content Automation Dashboard</h1>
+        <p class="timestamp">Last updated: <span id="timestamp">Loading...</span></p>
+    </div>
+    
+    <div class="container">
+        <!-- Key Metrics -->
+        <div class="grid">
+            <div class="card">
+                <h3>Articles Published</h3>
+                <div class="value" id="published-count">0</div>
+                <div class="change positive" id="published-change">+0 this week</div>
+            </div>
+            <div class="card">
+                <h3>Success Rate</h3>
+                <div class="value" id="success-rate">0%</div>
+                <div class="change" id="success-trend">Calculating...</div>
+            </div>
+            <div class="card">
+                <h3>Avg. Plagarism Score</h3>
+                <div class="value" id="plagiarism-avg">0%</div>
+                <div class="change positive">Lower is better</div>
+            </div>
+            <div class="card">
+                <h3>Total Traffic (30d)</h3>
+                <div class="value" id="total-traffic">0</div>
+                <div class="change" id="traffic-change">+0 this week</div>
+            </div>
+        </div>
+        
+        <!-- Charts -->
+        <div class="chart-section">
+            <div class="chart-wrapper">
+                <h3>Publishing Trend</h3>
+                <canvas id="publishingChart"></canvas>
+            </div>
+            <div class="chart-wrapper">
+                <h3>Traffic by Site</h3>
+                <canvas id="trafficChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Recent Publications -->
+        <div class="table-section">
+            <h3>Recent Publications</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Site</th>
+                        <th>Title</th>
+                        <th>Status</th>
+                        <th>Views</th>
+                        <th>Quality</th>
+                    </tr>
+                </thead>
+                <tbody id="recent-table">
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 40px; color: #7f8c8d;">
+                            Loading publication data...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Publishing Schedule -->
+        <div class="table-section">
+            <h3>Scheduled Jobs</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Site</th>
+                        <th>Niche</th>
+                        <th>Next Publish</th>
+                        <th>Frequency</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="schedule-table">
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 40px; color: #7f8c8d;">
+                            Loading schedule...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <script>
+        // Mock data - in production, fetch from your API
+        const mockData = {
+            metrics: {
+                publishedCount: 24,
+                successRate: 92,
+                plagiarismAvg: 8,
+                totalTraffic: 3420,
+                trafficChange: 520,
+                publishedChange: 8
+            },
+            publishingTrend: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                data: [2, 2, 3, 2, 2, 0, 0]
+            },
+            trafficByAite: {
+                labels: ['Tech Biz', 'Entrepreneur', 'Global Biz', 'Industry'],
+                data: [920, 780, 650, 470]
+            },
+            recentPublications: [
+                { date: '2024-01-15', site: 'Tech Biz', title: 'The Rise of AI-Powered Startups', status: 'published', views: 245, quality: 'A' },
+                { date: '2024-01-14', site: 'Entrepreneur', title: '5 Lessons from Failed Startups', status: 'published', views: 189, quality: 'B+' },
+                { date: '2024-01-13', site: 'Global Biz', title: 'Trade Wars Impact on Markets', status: 'published', views: 312, quality: 'A' },
+                { date: '2024-01-13', site: 'Industry', title: 'Supply Chain Resilience Post-2023', status: 'draft', views: 0, quality: 'A-' },
+                { date: '2024-01-12', site: 'Tech Biz', title: 'Emerging Tech Trends 2024', status: 'published', views: 567, quality: 'A' },
+            ],
+            schedule: [
+                { site: 'Tech Biz', niche: 'tech startups', nextPublish: 'Today 4:00 PM', frequency: '2x daily', status: 'active' },
+                { site: 'Entrepreneur', niche: 'entrepreneurship', nextPublish: 'Today 7:00 AM', frequency: '1x daily', status: 'active' },
+                { site: 'Global Biz', niche: 'international trade', nextPublish: 'Tomorrow 9:00 AM', frequency: '1x daily', status: 'active' },
+                { site: 'Industry', niche: 'manufacturing', nextPublish: 'Tomorrow 10:00 AM', frequency: '1x daily', status: 'active' },
+            ]
+        };
+        
+        // Update timestamp
+        document.getElementById('timestamp').textContent = new Date().toLocaleString();
+        
+        // Update metrics
+        document.getElementById('published-count').textContent = mockData.metrics.publishedCount;
+        document.getElementById('published-change').textContent = `+${mockData.metrics.publishedChange} this week`;
+        document.getElementById('success-rate').textContent = mockData.metrics.successRate + '%';
+        document.getElementById('plagiarism-avg').textContent = mockData.metrics.plagiarismAvg + '%';
+        document.getElementById('total-traffic').textContent = mockData.metrics.totalTraffic.toLocaleString();
+        document.getElementById('traffic-change').textContent = `+${mockData.metrics.trafficChange} this week`;
+        
+        // Publishing Trend Chart
+        new Chart(document.getElementById('publishingChart'), {
+            type: 'line',
+            data: {
+                labels: mockData.publishingTrend.labels,
+                datasets: [{
+                    label: 'Articles Published',
+                    data: mockData.publishingTrend.data,
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    tension: 0.3,
+                    fill: true,
+                    pointRadius: 5,
+                    pointBackgroundColor: '#3498db'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                }
+            }
+        });
+        
+        // Traffic by Site Chart
+        new Chart(document.getElementById('trafficChart'), {
+            type: 'bar',
+            data: {
+                labels: mockData.trafficByAite.labels,
+                datasets: [{
+                    label: 'Monthly Views',
+                    data: mockData.trafficByAite.data,
+                    backgroundColor: ['#3498db', '#2ecc71', '#f39c12', '#e74c3c']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+        
+        // Recent Publications Table
+        const tableBody = document.getElementById('recent-table');
+        tableBody.innerHTML = mockData.recentPublications.map(pub => `
+            <tr>
+                <td>${pub.date}</td>
+                <td>${pub.site}</td>
+                <td><strong>${pub.title}</strong></td>
+                <td><span class="status ${pub.status}">${pub.status.charAt(0).toUpperCase() + pub.status.slice(1)}</span></td>
+                <td>${pub.views}</td>
+                <td>${pub.quality}</td>
+            </tr>
+        `).join('');
+        
+        // Schedule Table
+        const scheduleBody = document.getElementById('schedule-table');
+        scheduleBody.innerHTML = mockData.schedule.map(job => `
+            <tr>
+                <td><strong>${job.site}</strong></td>
+                <td>${job.niche}</td>
+                <td>${job.nextPublish}</td>
+                <td>${job.frequency}</td>
+                <td><span class="status published">${job.status}</span></td>
+            </tr>
+        `).join('');
+        
+        // Auto-refresh every 5 minutes (in production, fetch real data from API)
+        setInterval(() => {
+            location.reload();
+        }, 5 * 60 * 1000);
+    </script>
+</body>
+</html>

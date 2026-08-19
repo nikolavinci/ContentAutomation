@@ -1,0 +1,43 @@
+[Unit]
+Description=WordPress Content Automation Scheduler
+Documentation=file:///home/www-data/wp-automation/SETUP.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/home/www-data/wp-automation
+
+# Load environment variables
+EnvironmentFile=/home/www-data/wp-automation/.env
+
+# Python path
+Environment="PATH=/home/www-data/wp-automation/venv/bin:/usr/local/bin:/usr/bin"
+
+# Start command
+ExecStart=/home/www-data/wp-automation/venv/bin/python3 wp_scheduler.py --config sites.yaml
+
+# Restart policy
+Restart=on-failure
+RestartSec=30
+StartLimitInterval=600
+StartLimitBurst=5
+
+# Process management
+KillMode=process
+KillSignal=SIGTERM
+TimeoutStopSec=10
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=wp-automation
+
+# Resource limits (optional)
+MemoryLimit=512M
+CPUQuota=50%
+
+[Install]
+WantedBy=multi-user.target
