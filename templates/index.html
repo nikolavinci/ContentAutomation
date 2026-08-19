@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI News Aggregator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 font-sans leading-normal tracking-normal h-screen flex overflow-hidden">
+    {% raw %}
+    <div id="app" class="flex w-full h-full">
+        <!-- Sidebar Navigation -->
+        <div class="w-64 bg-gray-900 shadow-lg z-20 flex flex-col h-full text-white">
+            <div class="p-6 border-b border-gray-800">
+                <h1 class="text-xl font-bold text-white flex items-center">
+                    <i class="fas fa-newspaper mr-2 text-blue-400"></i> AI Aggregator
+                </h1>
+            </div>
+            
+            <nav class="flex-1 p-4 space-y-2">
+                <button @click="currentTab = 'dashboard'" :class="{'bg-gray-800 text-blue-400': currentTab === 'dashboard', 'hover:bg-gray-800': currentTab !== 'dashboard'}" class="w-full text-left px-4 py-3 rounded-lg transition-colors flex items-center">
+                    <i class="fas fa-chart-line w-6"></i> Dashboard
+                </button>
+                <button @click="currentTab = 'sites'" :class="{'bg-gray-800 text-blue-400': currentTab === 'sites', 'hover:bg-gray-800': currentTab !== 'sites'}" class="w-full text-left px-4 py-3 rounded-lg transition-colors flex items-center">
+                    <i class="fas fa-globe w-6"></i> Site Manager
+                </button>
+                <button @click="loadDrafts(); currentTab = 'drafts'" :class="{'bg-gray-800 text-blue-400': currentTab === 'drafts', 'hover:bg-gray-800': currentTab !== 'drafts'}" class="w-full text-left px-4 py-3 rounded-lg transition-colors flex items-center">
+                    <i class="fas fa-file-alt w-6"></i> Saved Drafts
+                </button>
+                <button @click="currentTab = 'logs'" :class="{'bg-gray-800 text-blue-400': currentTab === 'logs', 'hover:bg-gray-800': currentTab !== 'logs'}" class="w-full text-left px-4 py-3 rounded-lg transition-colors flex items-center">
+                    <i class="fas fa-terminal w-6"></i> System Logs
+                </button>
+            </nav>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 flex flex-col h-full overflow-hidden relative">
+            
+            <!-- Toast Notification -->
+            <div v-if="notification" class="absolute top-4 right-4 bg-gray-800 text-white px-6 py-3 rounded shadow-lg z-50 flex items-center border-l-4 border-blue-500 animate-bounce">
+                <i class="fas fa-info-circle mr-3 text-blue-400"></i> {{ notification }}
+            </div>
+
+            <!-- Tab: Dashboard -->
+            <div v-if="currentTab === 'dashboard'" class="p-8 flex-1 overflow-y-auto">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Overview</h2>
+                
+                <div v-if="Object.keys(sites).length === 0" class="bg-white rounded-lg shadow p-10 text-center border border-dashed border-gray-300">
+                    <i class="fas fa-satellite-dish text-5xl text-gray-300 mb-4"></i>
+                    <h3 class="text-xl font-bold text-gray-600 mb-2">No Sites Configured</h3>
+                    <p class="text-gray-500 mb-6">Head over to the Site Manager to add your first WordPress site and RSS feeds.</p>
+                    <button @click="currentTab = 'sites'" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow">Go to Site Manager</button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div v-for="(config, site) in sites" :key="site" class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="bg-gray-50 p-4 border-b flex justify-between items-center">
+                            <h3 class="font-bold text-lg text-gray-800">{{ site }}</h3>
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 uppercase tracking-wide">{{ config.provider || 'openai' }}</span>
+                        </div>
+                        <div class="p-5">
+                            <div class="mb-4">
+                                <p class="text-sm text-gray-500 uppercase font-semibold mb-1">Niche</p>
+                                <p class="text-gray-800">{{ config.niche }}</p>
+                            </div>
+                            <div class="mb-5">
+                                <p class="text-sm text-gray-500 uppercase font-semibold mb-1">Monitoring</p>
+                                <p class="text-gray-800 flex items-center">
+                                    <i class="fas fa-rss text-orange-500 mr-2"></i> 
+                                    {{ config.rss_feeds ? config.rss_feeds.length : 0 }} RSS Feeds
+                                </p>
+                            </div>
+                            
+                            <button @click="triggerRun(site, true)" :disabled="running[site]" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                <i :class="running[site] ? 'fas fa-spinner fa-spin' : 'fas fa-bolt'" class="mr-2"></i>
+                                {{ running[site] ? 'Aggregating News...' : 'Generate News Draft' }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Site Manager -->
+            <div v-if="currentTab === 'sites'" class="p-8 flex-1 overflow-y-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Site Manager</h2>
+                    <button @click="isEditing = true; editSiteName = ''; editConfig = {rss_feeds: []}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow flex items-center">
+                        <i class="fas fa-plus mr-2"></i> Add Site
+                    </button>
+                </div>
+
+                <div v-if="isEditing" class="bg-white rounded-lg shadow p-6 mb-8 border border-blue-100">
+                    <h3 class="text-lg font-bold mb-4">{{ editSiteName ? 'Edit' : 'New' }} Site</h3>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Site Name (ID)</label>
+                            <input v-model="editSiteName" type="text" class="w-full border rounded p-2 focus:ring focus:ring-blue-200 focus:outline-none" placeholder="e.g. tech_blog">
+                            <p class="text-xs text-gray-500 mt-1">If you change an existing site's name, it will create a copy.</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">AI Provider</label>
+                            <select v-model="editConfig.provider" class="w-full border rounded p-2 focus:ring focus:ring-blue-200">
+                                <option value="openai">OpenAI (GPT-4o)</option>
+                                <option value="gemini">Google Gemini (Flash)</option>
+                            </select>
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">WordPress Site URL</label>
+                            <input v-model="editConfig.site_url" type="url" class="w-full border rounded p-2 focus:ring focus:ring-blue-200" placeholder="https://example.com">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">WordPress REST API URL</label>
+                            <input v-model="editConfig.rest_api_url" type="url" class="w-full border rounded p-2 focus:ring focus:ring-blue-200" placeholder="https://example.com/wp-json/wp/v2">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                            <input v-model="editConfig.username" type="text" class="w-full border rounded p-2 focus:ring focus:ring-blue-200">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">App Password</label>
+                            <input v-model="editConfig.password" type="password" class="w-full border rounded p-2 focus:ring focus:ring-blue-200">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Niche / Primary Topic</label>
+                            <input v-model="editConfig.niche" type="text" class="w-full border rounded p-2 focus:ring focus:ring-blue-200" placeholder="e.g. AI in Healthcare">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">RSS Feeds (One per line)</label>
+                            <textarea v-model="rssFeedsText" rows="3" class="w-full border rounded p-2 focus:ring focus:ring-blue-200 font-mono text-sm" placeholder="https://techcrunch.com/feed/"></textarea>
+                            <p class="text-xs text-gray-500 mt-1">The system will monitor these feeds and cross-check breaking news across the web.</p>
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-2">
+                        <button @click="isEditing = false" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded">Cancel</button>
+                        <button @click="saveSite" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded shadow">Save Site</button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Site</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">URL</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Feeds</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr v-for="(config, site) in sites" :key="site">
+                                <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{{ site }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ config.site_url }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ config.rss_feeds ? config.rss_feeds.length : 0 }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <button @click="editExistingSite(site)" class="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
+                                    <button @click="deleteSite(site)" class="text-red-600 hover:text-red-900">Delete</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab: Drafts -->
+            <div v-if="currentTab === 'drafts'" class="p-8 flex-1 overflow-y-auto flex h-full">
+                <!-- Sidebar list of drafts -->
+                <div class="w-1/3 border-r pr-4 flex flex-col h-full overflow-y-auto">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Generated Drafts</h2>
+                    <div v-if="drafts.length === 0" class="text-gray-500 text-sm">No drafts found. Generate one first!</div>
+                    <div v-for="draft in drafts" :key="draft.filename" 
+                         @click="viewDraft(draft.filename)"
+                         :class="{'bg-blue-50 border-blue-500': selectedDraft === draft.filename, 'hover:bg-gray-50': selectedDraft !== draft.filename}"
+                         class="cursor-pointer border-l-4 border-transparent p-3 mb-2 rounded shadow-sm bg-white transition-colors">
+                        <div class="text-sm font-bold text-gray-800 truncate" :title="draft.filename">{{ draft.filename.replace('.md', '').split('_').slice(2).join('_') || draft.filename }}</div>
+                        <div class="text-xs text-gray-400 mt-1">{{ new Date(draft.created * 1000).toLocaleString() }}</div>
+                    </div>
+                </div>
+                <!-- Markdown viewer -->
+                <div class="w-2/3 pl-6 flex flex-col h-full overflow-y-auto">
+                    <div v-if="!selectedDraftContent" class="text-center text-gray-400 mt-20 flex flex-col items-center">
+                        <i class="fas fa-file-invoice text-5xl mb-4"></i>
+                        <p>Select a draft to read</p>
+                    </div>
+                    <div v-else class="bg-white p-8 rounded-lg shadow-sm border prose max-w-none">
+                        <pre class="whitespace-pre-wrap font-sans text-gray-800">{{ selectedDraftContent }}</pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Logs -->
+            <div v-if="currentTab === 'logs'" class="flex flex-col h-full bg-gray-900">
+                <div class="p-4 bg-gray-800 border-b border-gray-700 flex justify-between items-center">
+                    <h2 class="text-lg font-bold text-white font-mono flex items-center">
+                        <i class="fas fa-terminal mr-2"></i> System Terminal
+                    </h2>
+                    <div class="flex space-x-2">
+                        <button @click="copyLogs" class="bg-gray-700 hover:bg-gray-600 text-white text-xs font-bold py-1 px-3 rounded flex items-center">
+                            <i class="fas fa-copy mr-1"></i> Copy
+                        </button>
+                        <button @click="clearLogs" class="bg-red-900 hover:bg-red-800 text-white text-xs font-bold py-1 px-3 rounded flex items-center">
+                            <i class="fas fa-trash mr-1"></i> Clear
+                        </button>
+                    </div>
+                </div>
+                <div class="flex-1 overflow-y-auto p-4 font-mono text-sm" id="log-container">
+                    <div v-for="(log, idx) in logs" :key="idx" class="mb-1 text-gray-300">
+                        <span v-if="log.includes('ERROR') || log.includes('failed')" class="text-red-400">{{ log }}</span>
+                        <span v-else-if="log.includes('INFO')" class="text-blue-300">{{ log }}</span>
+                        <span v-else-if="log.includes('WARNING')" class="text-yellow-400">{{ log }}</span>
+                        <span v-else>{{ log }}</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    currentTab: 'dashboard',
+                    sites: {},
+                    logs: [],
+                    running: {},
+                    notification: "",
+                    logInterval: null,
+                    
+                    isEditing: false,
+                    editSiteName: '',
+                    editConfig: { rss_feeds: [] },
+                    rssFeedsText: '',
+                    
+                    drafts: [],
+                    selectedDraft: null,
+                    selectedDraftContent: ''
+                }
+            },
+            mounted() {
+                this.loadConfig();
+                this.loadLogs();
+                this.logInterval = setInterval(this.loadLogs, 2000);
+            },
+            beforeDestroy() {
+                clearInterval(this.logInterval);
+            },
+            methods: {
+                async loadDrafts() {
+                    try {
+                        const res = await fetch('/api/drafts');
+                        const data = await res.json();
+                        if (data.success) {
+                            this.drafts = data.drafts;
+                        }
+                    } catch(e) {
+                        console.error(e);
+                    }
+                },
+                async viewDraft(filename) {
+                    this.selectedDraft = filename;
+                    try {
+                        const res = await fetch(`/api/drafts/${filename}`);
+                        const data = await res.json();
+                        if (data.success) {
+                            this.selectedDraftContent = data.content;
+                        }
+                    } catch(e) {
+                        console.error(e);
+                    }
+                },
+                async loadConfig() {
+                    try {
+                        const res = await fetch('/api/config');
+                        this.sites = await res.json();
+                    } catch (e) {
+                        console.error("Failed to load config", e);
+                    }
+                },
+                async loadLogs() {
+                    try {
+                        const res = await fetch('/api/logs');
+                        const data = await res.json();
+                        const shouldScroll = this.logs.length !== data.logs.length || 
+                            (data.logs.length > 0 && this.logs[this.logs.length-1] !== data.logs[data.logs.length-1]);
+                            
+                        this.logs = data.logs;
+                        
+                        if (shouldScroll && this.currentTab === 'logs') {
+                            this.$nextTick(() => {
+                                const container = document.getElementById('log-container');
+                                if (container) container.scrollTop = container.scrollHeight;
+                            });
+                        }
+                    } catch (e) {
+                        console.error("Failed to load logs", e);
+                    }
+                },
+                async clearLogs() {
+                    try {
+                        await fetch('/api/logs/clear', { method: 'POST' });
+                        this.logs = [];
+                        this.notification = "Logs cleared";
+                        setTimeout(() => { this.notification = ""; }, 2000);
+                    } catch (e) {
+                        console.error("Failed to clear logs", e);
+                    }
+                },
+                copyLogs() {
+                    const text = this.logs.join('\\n');
+                    navigator.clipboard.writeText(text).then(() => {
+                        this.notification = "Logs copied to clipboard";
+                        setTimeout(() => { this.notification = ""; }, 2000);
+                    });
+                },
+                async triggerRun(site, draftOnly) {
+                    this.running[site] = true;
+                    this.notification = `Started news aggregation for ${site}...`;
+                    
+                    try {
+                        const res = await fetch('/api/trigger', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                site: site, 
+                                draft_only: draftOnly,
+                                provider: this.sites[site].provider || 'openai'
+                            })
+                        });
+                        
+                        const data = await res.json();
+                        if (!data.success) {
+                            this.notification = "Error: " + data.error;
+                            this.running[site] = false;
+                        } else {
+                            setTimeout(() => { this.notification = ""; }, 3000);
+                        }
+                        
+                        // We rely on logs to show completion, reset button after 45s
+                        setTimeout(() => { this.running[site] = false; }, 45000);
+                    } catch (e) {
+                        this.notification = "Failed to trigger run.";
+                        this.running[site] = false;
+                    }
+                },
+                editExistingSite(site) {
+                    this.editSiteName = site;
+                    this.editConfig = JSON.parse(JSON.stringify(this.sites[site])); // Deep copy
+                    if (!this.editConfig.rss_feeds) this.editConfig.rss_feeds = [];
+                    this.rssFeedsText = this.editConfig.rss_feeds.join('\\n');
+                    this.isEditing = true;
+                },
+                async saveSite() {
+                    if (!this.editSiteName) return;
+                    
+                    this.editConfig.rss_feeds = this.rssFeedsText.split(/\n+/).map(s => s.trim()).filter(s => s);
+                    
+                    try {
+                        await fetch('/api/sites', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ name: this.editSiteName, config: this.editConfig })
+                        });
+                        this.isEditing = false;
+                        this.loadConfig();
+                        this.notification = "Site saved successfully.";
+                        setTimeout(() => { this.notification = ""; }, 3000);
+                    } catch (e) {
+                        this.notification = "Failed to save site.";
+                    }
+                },
+                async deleteSite(site) {
+                    if (confirm(`Are you sure you want to delete ${site}?`)) {
+                        try {
+                            await fetch(`/api/sites/${site}`, { method: 'DELETE' });
+                            this.loadConfig();
+                        } catch (e) {
+                            console.error("Failed to delete", e);
+                        }
+                    }
+                }
+            },
+            watch: {
+                currentTab(newTab) {
+                    if (newTab === 'logs') {
+                        this.$nextTick(() => {
+                            const container = document.getElementById('log-container');
+                            if (container) container.scrollTop = container.scrollHeight;
+                        });
+                    }
+                }
+            }
+        }).mount('#app');
+    </script>
+    {% endraw %}
+</body>
+</html>
