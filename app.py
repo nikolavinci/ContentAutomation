@@ -123,6 +123,30 @@ def awesome_rss():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
+
+scheduler_process = None
+
+@app.route('/api/scheduler/status', methods=['GET'])
+def get_scheduler_status():
+    global scheduler_process
+    is_running = scheduler_process is not None and scheduler_process.poll() is None
+    return jsonify({"success": True, "is_running": is_running})
+
+@app.route('/api/scheduler/toggle', methods=['POST'])
+def toggle_scheduler():
+    global scheduler_process
+    is_running = scheduler_process is not None and scheduler_process.poll() is None
+    if is_running:
+        scheduler_process.terminate()
+        scheduler_process = None
+        return jsonify({"success": True, "is_running": False})
+    else:
+        try:
+            scheduler_process = subprocess.Popen(["python", "wp_scheduler.py", "--config", "sites.yaml"])
+            return jsonify({"success": True, "is_running": True})
+        except Exception as e:
+            return jsonify({"success": False, "error": str(e)}), 500
+
 @app.route('/api/trigger', methods=['POST'])
 def trigger_run():
     data = request.json

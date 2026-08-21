@@ -271,7 +271,8 @@
                     drafts: [],
                     selectedDraft: null,
                     selectedDraftContent: '',
-                    awesomeFeeds: []
+                    awesomeFeeds: [],
+                    schedulerRunning: false
                 }
             },
             mounted() {
@@ -305,6 +306,26 @@
                     } catch(e) {
                         console.error(e);
                     }
+                },
+                async checkSchedulerStatus() {
+                    try {
+                        const res = await fetch('/api/scheduler/status');
+                        const data = await res.json();
+                        if (data.success) {
+                            this.schedulerRunning = data.is_running;
+                        }
+                    } catch(e) {}
+                },
+                async toggleScheduler() {
+                    try {
+                        const res = await fetch('/api/scheduler/toggle', { method: 'POST' });
+                        const data = await res.json();
+                        if (data.success) {
+                            this.schedulerRunning = data.is_running;
+                            this.notification = this.schedulerRunning ? "Auto-Pilot Started! It will run in the background." : "Auto-Pilot Stopped.";
+                            setTimeout(() => { this.notification = ""; }, 4000);
+                        }
+                    } catch(e) {}
                 },
                 async loadAwesomeRss() {
                     if (this.awesomeFeeds.length > 0) return;

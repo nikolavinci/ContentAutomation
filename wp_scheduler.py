@@ -132,7 +132,12 @@ class ContentScheduler:
                 tags=site_config.get("tags", ["business", "innovation"]),
                 niche=site_config["niche"],
                 authors=site_config.get("authors", ["Editorial Team"]),
-                provider=site_config.get("provider", "openai")
+                provider=site_config.get("provider", "openai"),
+                rss_feeds=site_config.get("rss_feeds", []),
+                competitor_sitemaps=site_config.get("competitor_sitemaps", []),
+                min_word_count=site_config.get("min_word_count", 800),
+                min_grade=site_config.get("min_grade", 8),
+                max_grade=site_config.get("max_grade", 12)
             )
             
             # Parse schedule (e.g., "08:00,16:00" for 8am and 4pm)
