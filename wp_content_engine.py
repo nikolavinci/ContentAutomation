@@ -134,6 +134,23 @@ class ContentGenerator:
                 
         raise Exception(f"All providers failed. Errors: {'; '.join(errors)}")
         
+    def generate_featured_image(self, title: str) -> str:
+        if "openai" not in self.clients:
+            return None
+        logger.info(f"Generating featured image for: {title}")
+        try:
+            resp = self.clients["openai"].images.generate(
+                model="dall-e-3",
+                prompt=f"A modern, high-quality, professional editorial illustration representing the news headline: '{title}'. The style should be corporate, clean, and engaging. No text in the image.",
+                size="1024x1024",
+                quality="standard",
+                n=1,
+            )
+            return resp.data[0].url
+        except Exception as e:
+            logger.warning(f"Failed to generate featured image: {e}")
+            return None
+        
     def generate_article(self, config: ContentConfig, keyword_angle: str, related_posts: List[Dict], source_text: str = "") -> str:
         """Generate a complete article tailored to the niche"""
         
@@ -203,9 +220,12 @@ class NewsAggregator:
             for feed_url in config.rss_feeds[:3]:  # Max 3 feeds to avoid context limits
                 try:
                     feed = feedparser.parse(feed_url)
-                    if feed.entries:
-                        entry = feed.entries[0]
-                        rss_stories.append({"title": entry.title, "link": entry.link})
+                    for entry in feed.entries:
+                        if entry.link not in self.crawled_urls:
+                            rss_stories.append({"title": entry.title, "link": entry.link})
+                            self._mark_crawled(entry.link)
+                            break  # Only take 1 new story per feed
+                
                 except Exception as e:
                     logger.error(f"Failed to parse RSS {feed_url}: {e}")
                     
@@ -536,6 +556,12 @@ class ContentAutomationEngine:
         # Parse generated content (simplified)
         article = self._parse_generated_content(raw_content)
         
+        # Generate featured image
+        image_url = self.generator.generate_featured_image(article.title)
+        if image_url:
+            article.featured_image_url = image_url
+            logger.info("Featured image generated successfully.")
+        
         # Save local copy
         try:
             import os
@@ -544,7 +570,8 @@ class ContentAutomationEngine:
             safe_title = "".join(c for c in article.title if c.isalnum() or c in " -_").strip()
             filename = f"drafts/{timestamp}_{safe_title}.md"
             with open(filename, "w", encoding="utf-8") as f:
-                f.write(f"# {article.title}\n\n{article.content}")
+                img_md = f"![Featured Image]({article.featured_image_url})\n\n" if article.featured_image_url else ""
+                f.write(f"# {article.title}\n\n{img_md}{article.content}")
             logger.info(f"Saved local draft to {filename}")
         except Exception as e:
             logger.warning(f"Could not save local draft: {e}")
