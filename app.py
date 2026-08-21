@@ -111,6 +111,18 @@ def get_draft(filename):
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
+
+@app.route('/api/awesome-rss', methods=['GET'])
+def awesome_rss():
+    try:
+        if not os.path.exists('curated_feeds.json'):
+            return jsonify({"success": False, "error": "Feeds not compiled yet"}), 404
+        with open('curated_feeds.json', 'r', encoding='utf-8') as f:
+            feeds = json.load(f)
+        return jsonify({"success": True, "feeds": feeds})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
 @app.route('/api/trigger', methods=['POST'])
 def trigger_run():
     data = request.json

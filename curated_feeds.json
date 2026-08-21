@@ -1,0 +1,470 @@
+[
+  {
+    "title": "Accidental Tech Podcast",
+    "url": "https://atp.fm/rss",
+    "category": "Tech",
+    "status": "live"
+  },
+  {
+    "title": "Analog(ue)",
+    "url": "https://www.relay.fm/analogue/feed",
+    "category": "Tech",
+    "status": "live"
+  },
+  {
+    "title": "Ars Technica - All content",
+    "url": "http://feeds.arstechnica.com/arstechnica/index",
+    "category": "Tech",
+    "status": "live"
+  },
+  {
+    "title": "CNET",
+    "url": "https://www.cnet.com/rss/news/",
+    "category": "Tech",
+    "status": "live"
+  },
+  {
+    "title": "CNET",
+    "url": "https://www.youtube.com/feeds/videos.xml?user=CNETTV",
+    "category": "Tech",
+    "status": "live"
+  },
+  {
+    "title": "Clockwise",
+    "url": "https://www.relay.fm/clockwise/feed",
+    "category": "Tech",
+    "status": "live"
+  },
+  {
+    "title": "Crunch Hype",
+    "url": "http://feeds.feedburner.com/TechCrunch",
+    "category": "Tech",
+    "status": "live"
+  },
+  {
+    "title": "Engadget - Technology News &amp; Expert Reviews",
+    "url": "https://www.engadget.com/rss.xml",
+    "category": "Tech",
+    "status": "live"
+  },
+  {
+    "title": "Gizmodo",
+    "url": "https://gizmodo.com/rss",
+    "category": "Tech",
+    "status": "live"
+  },
+  {
+    "title": "Hacker News",
+    "url": "https://news.ycombinator.com/rss",
+    "category": "Tech",
+    "status": "live"
+  },
+  {
+    "title": "Lifehacker",
+    "url": "https://lifehacker.com/rss",
+    "category": "Tech",
+    "status": "live"
+  },
+  {
+    "title": "Linus Tech Tips",
+    "url": "https://www.youtube.com/feeds/videos.xml?user=LinusTechTips",
+    "category": "Tech",
+    "status": "live"
+  },
+  {
+    "title": "Marques Brownlee",
+    "url": "https://www.youtube.com/feeds/videos.xml?user=marquesbrownlee",
+    "category": "Tech",
+    "status": "live"
+  },
+  {
+    "title": "Mashable",
+    "url": "http://feeds.mashable.com/Mashable",
+    "category": "Tech",
+    "status": "live"
+  },
+  {
+    "title": "NYT &gt; Technology",
+    "url": "https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml",
+    "category": "Tech",
+    "status": "live"
+  },
+  {
+    "title": "ReadWrite",
+    "url": "https://readwrite.com/feed/",
+    "category": "Tech",
+    "status": "live"
+  },
+  {
+    "title": "Reply All",
+    "url": "https://feeds.megaphone.fm/replyall",
+    "category": "Tech",
+    "status": "live"
+  },
+  {
+    "title": "Rocket",
+    "url": "https://www.relay.fm/rocket/feed",
+    "category": "Tech",
+    "status": "live"
+  },
+  {
+    "title": "Slashdot",
+    "url": "http://rss.slashdot.org/Slashdot/slashdotMain",
+    "category": "Tech",
+    "status": "live"
+  },
+  {
+    "title": "Stratechery by Ben Thompson",
+    "url": "http://stratechery.com/feed/",
+    "category": "Tech",
+    "status": "live"
+  },
+  {
+    "title": "The Keyword",
+    "url": "https://www.blog.google/rss/",
+    "category": "Tech",
+    "status": "live"
+  },
+  {
+    "title": "The Next Web",
+    "url": "https://thenextweb.com/feed/",
+    "category": "Tech",
+    "status": "live"
+  },
+  {
+    "title": "The Verge",
+    "url": "https://www.theverge.com/rss/index.xml",
+    "category": "Tech",
+    "status": "live"
+  },
+  {
+    "title": "The Verge",
+    "url": "https://www.youtube.com/feeds/videos.xml?user=TheVerge",
+    "category": "Tech",
+    "status": "live"
+  },
+  {
+    "title": "The Vergecast",
+    "url": "https://feeds.megaphone.fm/vergecast",
+    "category": "Tech",
+    "status": "live"
+  },
+  {
+    "title": "This Week in Tech (Audio)",
+    "url": "https://feeds.twit.tv/twit.xml",
+    "category": "Tech",
+    "status": "live"
+  },
+  {
+    "title": "Unbox Therapy",
+    "url": "https://www.youtube.com/feeds/videos.xml?user=unboxtherapy",
+    "category": "Tech",
+    "status": "live"
+  },
+  {
+    "title": "www.theregister.com - Articles",
+    "url": "https://www.theregister.com/headlines.rss",
+    "category": "Tech",
+    "status": "live"
+  },
+  {
+    "title": "All News",
+    "url": "https://www.investing.com/rss/news.rss",
+    "category": "Business & Economy",
+    "status": "live"
+  },
+  {
+    "title": "Bloomberg Originals",
+    "url": "https://www.youtube.com/feeds/videos.xml?user=Bloomberg",
+    "category": "Business & Economy",
+    "status": "live"
+  },
+  {
+    "title": "Breaking News on Seeking Alpha",
+    "url": "https://seekingalpha.com/market_currents.xml",
+    "category": "Business & Economy",
+    "status": "live"
+  },
+  {
+    "title": "Business Insider",
+    "url": "https://www.youtube.com/feeds/videos.xml?user=businessinsider",
+    "category": "Business & Economy",
+    "status": "live"
+  },
+  {
+    "title": "EconTalk",
+    "url": "https://feeds.simplecast.com/wgl4xEgL",
+    "category": "Business & Economy",
+    "status": "live"
+  },
+  {
+    "title": "Economic Times",
+    "url": "https://economictimes.indiatimes.com/rssfeedsdefault.cms",
+    "category": "Business & Economy",
+    "status": "live"
+  },
+  {
+    "title": "Forbes - Business",
+    "url": "https://www.forbes.com/business/feed/",
+    "category": "Business & Economy",
+    "status": "live"
+  },
+  {
+    "title": "Fortune | FORTUNE",
+    "url": "https://fortune.com/feed",
+    "category": "Business & Economy",
+    "status": "live"
+  },
+  {
+    "title": "HBR IdeaCast",
+    "url": "http://feeds.harvardbusiness.org/harvardbusiness/ideacast",
+    "category": "Business & Economy",
+    "status": "live"
+  },
+  {
+    "title": "How I Built This with Guy Raz",
+    "url": "https://feeds.npr.org/510313/podcast.xml",
+    "category": "Business & Economy",
+    "status": "live"
+  },
+  {
+    "title": "Planet Money",
+    "url": "https://feeds.npr.org/510289/podcast.xml",
+    "category": "Business & Economy",
+    "status": "dead"
+  },
+  {
+    "title": "Startup Stories - Mixergy",
+    "url": "https://feeds.feedburner.com/Mixergy-main-podcast",
+    "category": "Business & Economy",
+    "status": "live"
+  },
+  {
+    "title": "The Blog of Author Tim Ferriss",
+    "url": "https://tim.blog/feed/",
+    "category": "Business & Economy",
+    "status": "live"
+  },
+  {
+    "title": "The Duct Tape Marketing Podcast",
+    "url": "https://ducttape.libsyn.com/rss",
+    "category": "Business & Economy",
+    "status": "live"
+  },
+  {
+    "title": "The Growth Show",
+    "url": "http://thegrowthshow.hubspot.libsynpro.com/",
+    "category": "Business & Economy",
+    "status": "dead"
+  },
+  {
+    "title": "US Top News and Analysis",
+    "url": "https://www.cnbc.com/id/100003114/device/rss/rss.html",
+    "category": "Business & Economy",
+    "status": "live"
+  },
+  {
+    "title": "Yahoo Finance",
+    "url": "https://finance.yahoo.com/news/rssindex",
+    "category": "Business & Economy",
+    "status": "live"
+  },
+  {
+    "title": "60-Second Science",
+    "url": "http://rss.sciam.com/sciam/60secsciencepodcast",
+    "category": "Science",
+    "status": "live"
+  },
+  {
+    "title": "BBC News",
+    "url": "http://feeds.bbci.co.uk/news/science_and_environment/rss.xml",
+    "category": "Science",
+    "status": "live"
+  },
+  {
+    "title": "Discovery",
+    "url": "https://podcasts.files.bbci.co.uk/p002w557.rss",
+    "category": "Science",
+    "status": "live"
+  },
+  {
+    "title": "FlowingData",
+    "url": "https://flowingdata.com/feed",
+    "category": "Science",
+    "status": "live"
+  },
+  {
+    "title": "Gastropod",
+    "url": "https://www.omnycontent.com/d/playlist/aaea4e69-af51-495e-afc9-a9760146922b/2a195077-f014-41d2-8313-ab190186b4c2/277bcd5c-0a05-4c14-8ba6-ab190186b4d5/podcast.rss",
+    "category": "Science",
+    "status": "live"
+  },
+  {
+    "title": "Hidden Brain",
+    "url": "https://feeds.npr.org/510308/podcast.xml",
+    "category": "Science",
+    "status": "live"
+  },
+  {
+    "title": "Invisibilia",
+    "url": "https://feeds.npr.org/510307/podcast.xml",
+    "category": "Science",
+    "status": "dead"
+  },
+  {
+    "title": "Latest Science News -- ScienceDaily",
+    "url": "https://www.sciencedaily.com/rss/all.xml",
+    "category": "Science",
+    "status": "live"
+  },
+  {
+    "title": "NYT &gt; Science",
+    "url": "https://rss.nytimes.com/services/xml/rss/nyt/Science.xml",
+    "category": "Science",
+    "status": "live"
+  },
+  {
+    "title": "Nature",
+    "url": "https://www.nature.com/nature.rss",
+    "category": "Science",
+    "status": "live"
+  },
+  {
+    "title": "Phys.org - latest science and technology news stories",
+    "url": "https://phys.org/rss-feed/",
+    "category": "Science",
+    "status": "live"
+  },
+  {
+    "title": "Popular Science",
+    "url": "https://www.popsci.com/arcio/rss/",
+    "category": "Science",
+    "status": "live"
+  },
+  {
+    "title": "Probably Science",
+    "url": "https://probablyscience.libsyn.com/rss",
+    "category": "Science",
+    "status": "live"
+  },
+  {
+    "title": "Radiolab",
+    "url": "http://feeds.wnyc.org/radiolab",
+    "category": "Science",
+    "status": "live"
+  },
+  {
+    "title": "Reddit Science",
+    "url": "https://reddit.com/r/science/.rss",
+    "category": "Science",
+    "status": "dead"
+  },
+  {
+    "title": "Sawbones: A Marital Tour of Misguided Medicine",
+    "url": "https://feeds.simplecast.com/y1LF_sn2",
+    "category": "Science",
+    "status": "live"
+  },
+  {
+    "title": "Science",
+    "url": "https://gizmodo.com/tag/science/rss",
+    "category": "Science",
+    "status": "live"
+  },
+  {
+    "title": "Science Latest",
+    "url": "https://www.wired.com/feed/category/science/latest/rss",
+    "category": "Science",
+    "status": "live"
+  },
+  {
+    "title": "Scientific American Content: Global",
+    "url": "http://rss.sciam.com/ScientificAmerican-Global",
+    "category": "Science",
+    "status": "live"
+  },
+  {
+    "title": "Shirtloads of Science",
+    "url": "https://shirtloadsofscience.libsyn.com/rss",
+    "category": "Science",
+    "status": "live"
+  },
+  {
+    "title": "TED Talks Daily",
+    "url": "https://pa.tedcdn.com/feeds/talks.rss",
+    "category": "Science",
+    "status": "live"
+  },
+  {
+    "title": "The Infinite Monkey Cage",
+    "url": "https://podcasts.files.bbci.co.uk/b00snr0w.rss",
+    "category": "Science",
+    "status": "live"
+  },
+  {
+    "title": "This Week in Science \u2013 The Kickass Science Podcast",
+    "url": "http://www.twis.org/feed/",
+    "category": "Science",
+    "status": "live"
+  },
+  {
+    "title": "BBC News",
+    "url": "http://feeds.bbci.co.uk/news/world/rss.xml",
+    "category": "News",
+    "status": "live"
+  },
+  {
+    "title": "CNN.com - RSS Channel - World",
+    "url": "http://rss.cnn.com/rss/edition_world.rss",
+    "category": "News",
+    "status": "live"
+  },
+  {
+    "title": "International: Top News And Analysis",
+    "url": "https://www.cnbc.com/id/100727362/device/rss/rss.html",
+    "category": "News",
+    "status": "live"
+  },
+  {
+    "title": "NDTV News Search Records Found 1000",
+    "url": "http://feeds.feedburner.com/ndtvnews-world-news",
+    "category": "News",
+    "status": "live"
+  },
+  {
+    "title": "NYT &gt; World News",
+    "url": "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
+    "category": "News",
+    "status": "live"
+  },
+  {
+    "title": "Top stories - Google News",
+    "url": "https://news.google.com/rss",
+    "category": "News",
+    "status": "live"
+  },
+  {
+    "title": "World",
+    "url": "http://feeds.washingtonpost.com/rss/world",
+    "category": "News",
+    "status": "dead"
+  },
+  {
+    "title": "World News",
+    "url": "https://www.reddit.com/r/worldnews/.rss",
+    "category": "News",
+    "status": "dead"
+  },
+  {
+    "title": "World News, Today World News, Latest International News, World Breaking News, Trending News of World - Times of India",
+    "url": "https://timesofindia.indiatimes.com/rssfeeds/296589292.cms",
+    "category": "News",
+    "status": "live"
+  },
+  {
+    "title": "World news | The Guardian",
+    "url": "https://www.theguardian.com/world/rss",
+    "category": "News",
+    "status": "live"
+  }
+]
