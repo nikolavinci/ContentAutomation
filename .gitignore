@@ -6,3 +6,6 @@ sites.yaml
 drafts/
 update_*.py
 restore_*.py
+
+fix_*.py
+crawled_history.json
