@@ -52,6 +52,7 @@ class ContentConfig:
     min_word_count: int = 800
     min_grade: int = 8
     max_grade: int = 12
+    competitor_sitemaps: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -218,6 +219,33 @@ class NewsAggregator:
     def gather_source_material(self, config: ContentConfig) -> (str, str):
         # 1. Parse RSS feeds if available
         rss_stories = []
+        if config.competitor_sitemaps:
+            for sm_url in config.competitor_sitemaps[:2]:
+                try:
+                    import xml.etree.ElementTree as ET
+                    import urllib.request
+                    req = urllib.request.Request(sm_url, headers={'User-Agent': 'Mozilla/5.0'})
+                    xml_data = urllib.request.urlopen(req, timeout=10).read()
+                    
+                    # Very basic sitemap parsing
+                    urls = re.findall(r'<loc>(https?://[^<]+)</loc>', xml_data.decode('utf-8'))
+                    
+                    # Sort or just take the top few (assuming ordered by latest)
+                    for url in urls[:5]:
+                        if url not in self.crawled_urls:
+                            # Scrape to get title
+                            try:
+                                html = urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'}), timeout=5).read().decode('utf-8')
+                                title_match = re.search(r'<title>(.*?)</title>', html, re.IGNORECASE)
+                                title = title_match.group(1) if title_match else url.split('/')[-1]
+                                rss_stories.append({"title": f"Counter-Article: {title}", "link": url})
+                                self._mark_crawled(url)
+                                break # 1 per sitemap
+                            except Exception as e:
+                                logger.warning(f"Failed to scrape competitor url {url}: {e}")
+                except Exception as e:
+                    logger.error(f"Failed to parse sitemap {sm_url}: {e}")
+
         if config.rss_feeds:
             for feed_url in config.rss_feeds[:3]:  # Max 3 feeds to avoid context limits
                 try:
@@ -673,6 +701,7 @@ def main():
     parser.add_argument("--min-word-count", type=int, default=800)
     parser.add_argument("--min-grade", type=int, default=8)
     parser.add_argument("--max-grade", type=int, default=12)
+    parser.add_argument("--sitemaps", nargs="+", default=[], help="Competitor sitemap URLs")
     
     args = parser.parse_args()
     
@@ -689,7 +718,8 @@ def main():
         rss_feeds=args.rss,
         min_word_count=args.min_word_count,
         min_grade=args.min_grade,
-        max_grade=args.max_grade
+        max_grade=args.max_grade,
+        competitor_sitemaps=args.sitemaps
     )
     
     engine = ContentAutomationEngine(config)
