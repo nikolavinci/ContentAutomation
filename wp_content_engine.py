@@ -176,6 +176,8 @@ META_DESCRIPTION: <150-160 character SEO meta description>
 FOCUS_KEYWORDS: <Comma separated list of focus keywords>
 CATEGORIES: <Comma separated list of 3 relevant categories>
 TAGS: <Comma separated list of relevant tags>
+TWITTER_POST: <An engaging, viral tweet summarizing the article (max 280 chars) including the hashtag #news>
+LINKEDIN_POST: <A professional, engaging LinkedIn post summarizing the article, including relevant hashtags>
 ---
 
 # <The main headline>
@@ -634,9 +636,10 @@ class ContentAutomationEngine:
         word_count = len(content.split())
         
         
-        # Include SEO suggestions as bold text at the end of the draft if it's a draft
+        # Include SEO suggestions and Social Media syndication
         seo_footer = f"\n\n---\n### SEO Suggestions\n**Meta Description:** {metadata.get('META_DESCRIPTION', 'N/A')}\n**Focus Keywords:** {metadata.get('FOCUS_KEYWORDS', 'N/A')}\n**Categories:** {metadata.get('CATEGORIES', 'N/A')}\n**Tags:** {metadata.get('TAGS', 'N/A')}\n"
-        content = content + seo_footer
+        social_footer = f"\n---\n### Social Media Auto-Syndication\n**Twitter/X Post:**\n> {metadata.get('TWITTER_POST', 'N/A')}\n\n**LinkedIn Post:**\n> {metadata.get('LINKEDIN_POST', 'N/A')}\n"
+        content = content + seo_footer + social_footer
         
         return Article(
             title=metadata.get("HEADLINE", "Untitled"),
