@@ -204,6 +204,23 @@ Ensure the tone is objective and analytical."""
 class NewsAggregator:
     def __init__(self, provider: str = "openai", api_key: str = None):
         self.generator = ContentGenerator(provider=provider, api_key=api_key)
+        self.history_file = "crawled_history.json"
+        import json
+        import os
+        if os.path.exists(self.history_file):
+            try:
+                with open(self.history_file, 'r') as f:
+                    self.crawled_urls = set(json.load(f))
+            except:
+                self.crawled_urls = set()
+        else:
+            self.crawled_urls = set()
+            
+    def _mark_crawled(self, url: str):
+        self.crawled_urls.add(url)
+        import json
+        with open(self.history_file, 'w') as f:
+            json.dump(list(self.crawled_urls), f)
         
     def _scrape_text(self, url: str) -> str:
         try:
@@ -322,7 +339,8 @@ class TelegramNotifier:
 class QualityAssurance:
     """Validates article quality before publishing"""
     
-    def __init__(self):
+    def __init__(self, config):
+        self.config = config
         self.copyscape_api_key = os.getenv("COPYSCAPE_API_KEY")
     
     def check_plagiarism(self, content: str, url: Optional[str] = None) -> Dict:
