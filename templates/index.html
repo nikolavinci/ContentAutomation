@@ -377,9 +377,46 @@
                 async loadConfig() {
                     try {
                         const res = await fetch('/api/config');
-                        this.sites = await res.json();
+                        const data = await res.json();
+                        // Support both old API (returns object directly) and new API pattern
+                        this.sites = data.success ? data.config : data;
+                        
+                        if (this.sites && this.sites.global) {
+                            this.globalSettings = {
+                                openai_api_key: this.sites.global.openai_api_key || '',
+                                gemini_api_key: this.sites.global.gemini_api_key || ''
+                            };
+                        }
                     } catch (e) {
                         console.error("Failed to load config", e);
+                    }
+                },
+                async saveGlobalSettings() {
+                    try {
+                        const currentSites = { ...this.sites };
+                        if (!currentSites.global) currentSites.global = {};
+                        currentSites.global.openai_api_key = this.globalSettings.openai_api_key;
+                        currentSites.global.gemini_api_key = this.globalSettings.gemini_api_key;
+                        
+                        // /api/config expects the raw JSON body representing the full config
+                        const res = await fetch('/api/config', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify(currentSites)
+                        });
+                        
+                        // Wait, /api/config POST returns {"success": true}
+                        const data = await res.json();
+                        if (data.success) {
+                            this.notification = "Global Settings saved securely!";
+                            setTimeout(() => { this.notification = ""; }, 3000);
+                            this.loadConfig();
+                        } else {
+                            alert("Failed to save: " + data.error);
+                        }
+                    } catch(e) {
+                        console.error(e);
+                        alert("Error saving settings.");
                     }
                 },
                 async loadLogs() {
