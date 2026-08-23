@@ -142,7 +142,12 @@ def toggle_scheduler():
         return jsonify({"success": True, "is_running": False})
     else:
         try:
-            scheduler_process = subprocess.Popen(["python", "wp_scheduler.py", "--config", "sites.yaml"])
+            env = os.environ.copy()
+            full_config = load_config()
+            g = full_config.get("global", {})
+            if g.get("openai_api_key"): env["OPENAI_API_KEY"] = g.get("openai_api_key")
+            if g.get("gemini_api_key"): env["GEMINI_API_KEY"] = g.get("gemini_api_key")
+            scheduler_process = subprocess.Popen(["python", "wp_scheduler.py", "--config", "sites.yaml"], env=env)
             return jsonify({"success": True, "is_running": True})
         except Exception as e:
             return jsonify({"success": False, "error": str(e)}), 500
@@ -188,7 +193,13 @@ def trigger_run():
     # Start as background process
     try:
         # Note: In production you'd use Celery, but subprocess works for a local tool.
-        subprocess.Popen(cmd)
+        env = os.environ.copy()
+        full_config = load_config()
+        g = full_config.get("global", {})
+        if g.get("openai_api_key"): env["OPENAI_API_KEY"] = g.get("openai_api_key")
+        if g.get("gemini_api_key"): env["GEMINI_API_KEY"] = g.get("gemini_api_key")
+        
+        subprocess.Popen(cmd, env=env)
         return jsonify({"success": True, "message": f"Started background generation for {site_name}"})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
