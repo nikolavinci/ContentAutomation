@@ -174,13 +174,37 @@
                 <h2 class="text-2xl font-bold text-gray-800 mb-2">Awesome RSS Feeds</h2>
                 <p class="text-gray-600 mb-6">Curated feeds from <a href="https://github.com/plenaryapp/awesome-rss-feeds" target="_blank" class="text-blue-500 hover:underline">plenaryapp/awesome-rss-feeds</a>. Click to copy a feed URL!</p>
                 
+                <div class="flex flex-col md:flex-row gap-4 mb-6 bg-white p-4 rounded-lg shadow-sm border">
+                    <div class="flex-1">
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Search</label>
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                            <input v-model="feedSearch" type="text" class="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring focus:ring-blue-200 focus:outline-none" placeholder="Search feeds...">
+                        </div>
+                    </div>
+                    <div class="w-full md:w-64">
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Category</label>
+                        <select v-model="feedCategory" class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-200 focus:outline-none bg-white">
+                            <option value="">All Categories</option>
+                            <option v-for="cat in uniqueFeedCategories" :key="cat" :value="cat">{{ cat }}</option>
+                        </select>
+                    </div>
+                    <div class="w-full md:w-48">
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Status</label>
+                        <select v-model="feedStatus" class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-200 focus:outline-none bg-white">
+                            <option value="">All Statuses</option>
+                            <option value="live">Live Only</option>
+                            <option value="dead">Dead Only</option>
+                        </select>
+                    </div>
+                </div>
                 <div v-if="!awesomeFeeds.length" class="text-center mt-10">
                     <i class="fas fa-spinner fa-spin text-4xl text-blue-500 mb-4"></i>
                     <p class="text-gray-500">Loading curated feeds...</p>
                 </div>
                 
                 <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div v-for="feed in awesomeFeeds" :key="feed.url" class="bg-white p-4 rounded-lg shadow border border-gray-200 transition-all">
+                    <div v-for="feed in filteredFeeds" :key="feed.url" class="bg-white p-4 rounded-lg shadow border border-gray-200 transition-all">
                         <div class="flex justify-between items-start mb-2">
                             <span class="inline-block px-2 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded">{{ feed.category }}</span>
                             <div class="flex space-x-2">
@@ -319,6 +343,9 @@
                     selectedDraftContent: '',
                     awesomeFeeds: [],
                     schedulerRunning: false,
+                    feedSearch: '',
+                    feedCategory: '',
+                    feedStatus: 'live',
                     globalSettings: { openai_api_key: '', gemini_api_key: '' }
                 }
             },
@@ -329,6 +356,35 @@
             },
             beforeDestroy() {
                 clearInterval(this.logInterval);
+            },
+            computed: {
+                uniqueFeedCategories() {
+                    const cats = new Set();
+                    this.awesomeFeeds.forEach(f => { if(f.category) cats.add(f.category); });
+                    return Array.from(cats).sort();
+                },
+                filteredFeeds() {
+                    let result = this.awesomeFeeds;
+                    
+                    if (this.feedStatus) {
+                        result = result.filter(f => f.status === this.feedStatus);
+                    }
+                    
+                    if (this.feedCategory) {
+                        result = result.filter(f => f.category === this.feedCategory);
+                    }
+                    
+                    if (this.feedSearch) {
+                        const s = this.feedSearch.toLowerCase();
+                        result = result.filter(f => 
+                            (f.title && f.title.toLowerCase().includes(s)) || 
+                            (f.url && f.url.toLowerCase().includes(s)) ||
+                            (f.category && f.category.toLowerCase().includes(s))
+                        );
+                    }
+                    
+                    return result;
+                }
             },
             methods: {
                 async loadDrafts() {
