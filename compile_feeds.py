@@ -24,7 +24,7 @@ for item in opml_files:
         matches = re.findall(r'title="([^"]+)"[^>]+xmlUrl="([^"]+)"', opml)
         
         parts = path.split('/')
-        if "country_specific" in parts:
+        if "countries" in parts:
             cat = f"Country: {parts[-1].replace('.opml', '')}"
         else:
             cat = parts[-1].replace('.opml', '')
