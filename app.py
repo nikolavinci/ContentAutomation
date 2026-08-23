@@ -199,6 +199,9 @@ def trigger_run():
         g = full_config.get("global", {})
         if g.get("openai_api_key"): env["OPENAI_API_KEY"] = g.get("openai_api_key")
         if g.get("gemini_api_key"): env["GEMINI_API_KEY"] = g.get("gemini_api_key")
+        if g.get("anthropic_api_key"): env["ANTHROPIC_API_KEY"] = g.get("anthropic_api_key")
+        if g.get("grok_api_key"): env["GROK_API_KEY"] = g.get("grok_api_key")
+        if g.get("kimi_api_key"): env["KIMI_API_KEY"] = g.get("kimi_api_key")
         
         subprocess.Popen(cmd, env=env)
         return jsonify({"success": True, "message": f"Started background generation for {site_name}"})

@@ -79,7 +79,13 @@ class ContentGenerator:
     def __init__(self, provider: str = "openai", api_key: str = None):
         self.primary_provider = provider
         self.clients = {}
-        self.models = {"openai": "gpt-4o", "gemini": "gemini-3.7-flash"}
+        self.models = {
+            "openai": "gpt-4o", 
+            "gemini": "gemini-3.7-flash",
+            "anthropic": "claude-3-5-sonnet-latest",
+            "grok": "grok-2-latest",
+            "kimi": "moonshot-v1-32k"
+        }
         
         openai_key = api_key if provider == "openai" and api_key else os.getenv("OPENAI_API_KEY")
         if openai_key:
@@ -90,16 +96,29 @@ class ContentGenerator:
             from google import genai
             self.clients["gemini"] = genai.Client(api_key=gemini_key)
             
+        anthropic_key = api_key if provider == "anthropic" and api_key else os.getenv("ANTHROPIC_API_KEY")
+        if anthropic_key:
+            import anthropic
+            self.clients["anthropic"] = anthropic.Anthropic(api_key=anthropic_key)
+            
+        grok_key = api_key if provider == "grok" and api_key else os.getenv("GROK_API_KEY")
+        if grok_key:
+            self.clients["grok"] = openai.OpenAI(api_key=grok_key, base_url="https://api.x.ai/v1")
+            
+        kimi_key = api_key if provider == "kimi" and api_key else os.getenv("KIMI_API_KEY")
+        if kimi_key:
+            self.clients["kimi"] = openai.OpenAI(api_key=kimi_key, base_url="https://api.moonshot.cn/v1")
+            
         if not self.clients:
-            logger.warning("No API keys found for OpenAI or Gemini.")
+            logger.warning("No API keys found for any provider.")
             
     def _call_llm(self, prompt: str, provider: str) -> (str, dict):
         if provider not in self.clients:
             raise ValueError(f"Provider {provider} is not configured (missing API key).")
             
-        if provider == "openai":
-            resp = self.clients["openai"].chat.completions.create(
-                model=self.models["openai"],
+        if provider in ["openai", "grok", "kimi"]:
+            resp = self.clients[provider].chat.completions.create(
+                model=self.models[provider],
                 messages=[{"role": "user", "content": prompt}]
             )
             content = resp.choices[0].message.content
@@ -111,8 +130,16 @@ class ContentGenerator:
                 contents=prompt
             )
             content = resp.text
-            # Gemini Python SDK doesn't always expose usage easily, return 0 for now
             usage = {"prompt_tokens": 0, "completion_tokens": 0}
+            return content, usage
+        elif provider == "anthropic":
+            resp = self.clients["anthropic"].messages.create(
+                model=self.models["anthropic"],
+                max_tokens=8192,
+                messages=[{"role": "user", "content": prompt}]
+            )
+            content = resp.content[0].text
+            usage = {"prompt_tokens": resp.usage.input_tokens, "completion_tokens": resp.usage.output_tokens}
             return content, usage
             
     def generate_with_fallback(self, prompt: str) -> (str, str, dict):

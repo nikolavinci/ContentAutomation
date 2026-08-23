@@ -110,6 +110,9 @@
                             <select v-model="editConfig.provider" class="w-full border rounded p-2 focus:ring focus:ring-blue-200">
                                 <option value="openai">OpenAI (GPT-4o)</option>
                                 <option value="gemini">Google Gemini (Flash)</option>
+                                <option value="anthropic">Anthropic (Claude 3.5)</option>
+                                <option value="grok">Grok (xAI)</option>
+                                <option value="kimi">Kimi (Moonshot)</option>
                             </select>
                         </div>
                         <div class="col-span-2">
@@ -293,6 +296,18 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Gemini API Key</label>
                             <input v-model="globalSettings.gemini_api_key" type="password" class="w-full border rounded p-2 focus:ring focus:ring-blue-200 focus:outline-none" placeholder="AIzaSy...">
                         </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Anthropic API Key</label>
+                            <input v-model="globalSettings.anthropic_api_key" type="password" class="w-full border rounded p-2 focus:ring focus:ring-blue-200 focus:outline-none" placeholder="sk-ant-...">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Grok (xAI) API Key</label>
+                            <input v-model="globalSettings.grok_api_key" type="password" class="w-full border rounded p-2 focus:ring focus:ring-blue-200 focus:outline-none" placeholder="xai-...">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Kimi (Moonshot) API Key</label>
+                            <input v-model="globalSettings.kimi_api_key" type="password" class="w-full border rounded p-2 focus:ring focus:ring-blue-200 focus:outline-none" placeholder="sk-...">
+                        </div>
                     </div>
                     
                     <div class="mt-6 flex justify-end">
@@ -356,7 +371,7 @@
                     feedCategory: '',
                     feedCountry: '',
                     feedStatus: 'live',
-                    globalSettings: { openai_api_key: '', gemini_api_key: '' }
+                    globalSettings: { openai_api_key: '', gemini_api_key: '', anthropic_api_key: '', grok_api_key: '', kimi_api_key: '' }
                 }
             },
             mounted() {
@@ -545,6 +560,9 @@
                         if (!currentSites.global) currentSites.global = {};
                         currentSites.global.openai_api_key = this.globalSettings.openai_api_key;
                         currentSites.global.gemini_api_key = this.globalSettings.gemini_api_key;
+                        currentSites.global.anthropic_api_key = this.globalSettings.anthropic_api_key;
+                        currentSites.global.grok_api_key = this.globalSettings.grok_api_key;
+                        currentSites.global.kimi_api_key = this.globalSettings.kimi_api_key;
                         
                         // /api/config expects the raw JSON body representing the full config
                         const res = await fetch('/api/config', {
