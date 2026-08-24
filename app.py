@@ -153,6 +153,33 @@ def toggle_scheduler():
         except Exception as e:
             return jsonify({"success": False, "error": str(e)}), 500
 
+
+@app.route('/api/media', methods=['GET'])
+def list_media():
+    try:
+        media = []
+        if os.path.exists("drafts"):
+            for f in os.listdir("drafts"):
+                if f.lower().endswith(('.webp', '.jpg', '.jpeg', '.png')):
+                    path = os.path.join("drafts", f)
+                    stat = os.stat(path)
+                    media.append({
+                        "filename": f,
+                        "size": stat.st_size,
+                        "created": stat.st_mtime
+                    })
+            media.sort(reverse=True, key=lambda x: x["created"])
+        return jsonify({"success": True, "media": media})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/media/<filename>', methods=['GET'])
+def get_media_file(filename):
+    try:
+        return send_from_directory('drafts', filename)
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 404
+
 @app.route('/api/trigger', methods=['POST'])
 def trigger_run():
     data = request.json
