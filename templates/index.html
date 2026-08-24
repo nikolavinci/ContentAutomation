@@ -29,6 +29,9 @@
                 <button @click="loadDrafts(); currentTab = 'drafts'" :class="{'bg-gray-800 text-blue-400': currentTab === 'drafts', 'hover:bg-gray-800': currentTab !== 'drafts'}" class="w-full text-left px-4 py-3 rounded-lg transition-colors flex items-center">
                     <i class="fas fa-file-alt w-6"></i> Saved Drafts
                 </button>
+                <button @click="loadMedia(); currentTab = 'media'" :class="{'bg-gray-800 text-blue-400': currentTab === 'media', 'hover:bg-gray-800': currentTab !== 'media'}" class="w-full text-left px-4 py-3 rounded-lg transition-colors flex items-center">
+                    <i class="fas fa-images w-6"></i> Media Library
+                </button>
                 <button @click="loadAwesomeRss(); currentTab = 'discover'" :class="{'bg-gray-800 text-blue-400': currentTab === 'discover', 'hover:bg-gray-800': currentTab !== 'discover'}" class="w-full text-left px-4 py-3 rounded-lg transition-colors flex items-center">
                     <i class="fas fa-rss w-6"></i> Discover Feeds
                 </button>
