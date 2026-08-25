@@ -540,16 +540,13 @@ class WordPressPublisher:
         
     def publish(self, article: Article, draft_only: bool = False) -> Dict:
         """
-        Publish article to WordPress
-        If draft_only=True, creates as draft (for review)
+        Publish article to WordPress via custom Bridge Plugin
         """
-        
         if not self.config.rest_api_url or self.config.rest_api_url == "N/A":
-            return {
-                "success": True,
-                "url": "N/A (No REST API URL provided)",
-                "post_id": 0
-            }
+            return {"success": True, "url": "N/A", "post_id": 0}
+            
+        base_url = self.config.rest_api_url.split('/wp-json')[0]
+        endpoint = f"{base_url}/wp-json/ca/v1/publish"
         
         payload = {
             "title": article.title,
@@ -558,58 +555,34 @@ class WordPressPublisher:
             "categories": [self.config.category_id],
             "tags": article.tags,
             "status": "draft" if draft_only else "publish",
-            "meta": {
-                "author_name": article.author_name,
-                "plagiarism_score": article.plagiarism_score,
-                "readability_grade": article.readability_grade
-            }
+            "meta_description": article.metadata.get("META_DESCRIPTION", ""),
+            "focus_keywords": article.metadata.get("FOCUS_KEYWORDS", ""),
+            "featured_image_url": article.featured_image_url
         }
         
-        if article.featured_image_url:
-            # Download and attach featured image
-            image_id = self._upload_image(article.featured_image_url)
-            if image_id:
-                payload["featured_media"] = image_id
-        
         try:
-            endpoint = f"{self.config.rest_api_url}/posts"
             resp = requests.post(endpoint, json=payload, auth=self.session.auth, timeout=30)
             resp.raise_for_status()
             
             post_data = resp.json()
-            logger.info(f"Published post ID {post_data['id']}: {article.title}")
+            logger.info(f"Published post ID {post_data['post_id']} via Bridge Plugin")
             
             return {
                 "success": True,
-                "post_id": post_data["id"],
-                "url": post_data["link"],
+                "post_id": post_data["post_id"],
+                "url": post_data["url"],
                 "timestamp": datetime.now().isoformat()
             }
         
         except requests.exceptions.RequestException as e:
-            logger.error(f"Failed to publish: {e}")
+            logger.error(f"Failed to publish via Bridge: {e}")
+            if hasattr(e, 'response') and e.response is not None:
+                logger.error(f"Response: {e.response.text}")
             return {
                 "success": False,
                 "error": str(e),
                 "timestamp": datetime.now().isoformat()
             }
-    
-    def _upload_image(self, filepath: str, slug: str) -> Optional[int]:
-        """Upload a local image file to WordPress media library"""
-        try:
-            filename = f"{slug}.webp" if slug else "featured.webp"
-            with open(filepath, "rb") as f:
-                img_data = f.read()
-                
-            files = {"file": (filename, img_data, "image/webp")}
-            endpoint = f"{self.config.rest_api_url}/media"
-            resp = requests.post(endpoint, files=files, auth=self.session.auth, timeout=30)
-            resp.raise_for_status()
-            
-            return resp.json()["id"]
-        except Exception as e:
-            logger.warning(f"Image upload failed: {e}")
-            return None
 
 
 class ContentAutomationEngine:
