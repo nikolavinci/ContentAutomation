@@ -20,7 +20,8 @@ class NCA_Admin {
                 .wca-admin-wrap .form-table td { padding: 1.5rem; vertical-align: middle; border-bottom: 1px solid #e2e8f0; }
                 .wca-admin-wrap .form-table tr:last-child th, .wca-admin-wrap .form-table tr:last-child td { border-bottom: none; }
 
-                .wca-admin-wrap input[type="text"], .wca-admin-wrap input[type="password"], .wca-admin-wrap input[type="number"], .wca-admin-wrap select { display: block; height: 2.5rem; width: 100%; max-width: 450px; border-radius: 0.375rem; border: 1px solid #e2e8f0; background-color: transparent; padding: 0.5rem 0.75rem; font-size: 0.875rem; color: #0f172a; transition: all 0.15s ease; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); box-sizing: border-box; margin: 0; }
+                .wca-admin-wrap input[type="text"], .wca-admin-wrap input[type="password"], .wca-admin-wrap input[type="number"] { display: block; height: 2.5rem; width: 100%; max-width: 450px; border-radius: 0.375rem; border: 1px solid #e2e8f0; background-color: transparent; padding: 0.5rem 0.75rem; font-size: 0.875rem; color: #0f172a; transition: all 0.15s ease; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); box-sizing: border-box; margin: 0; }
+                .wca-admin-wrap select { display: block; height: auto; min-height: 2.75rem; width: 100%; max-width: 450px; border-radius: 0.375rem; border: 1px solid #e2e8f0; background-color: #fff; padding: 0.6rem 1rem; font-size: 0.95rem; color: #0f172a; transition: all 0.15s ease; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); box-sizing: border-box; margin: 0; line-height: 1.5; appearance: auto; }
                 .wca-admin-wrap textarea { display: block; min-height: 80px; width: 100%; max-width: 450px; border-radius: 0.375rem; border: 1px solid #e2e8f0; background-color: transparent; padding: 0.5rem 0.75rem; font-size: 0.875rem; color: #0f172a; transition: all 0.15s ease; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); line-height: 1.5; box-sizing: border-box; }
                 .wca-admin-wrap input:focus, .wca-admin-wrap textarea:focus, .wca-admin-wrap select:focus { outline: none; border-color: #0f172a; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #0f172a; }
 
@@ -228,8 +229,8 @@ class NCA_Admin {
 
         add_settings_section( "nca_api_section", "", null, "nca-dashboard" );
         $this->add_field("nca-dashboard", "nca_api_section", "niche", "Content Niche", "text", "The overarching topic (e.g. \"Technology Startups\").");
-        $this->add_field("nca-dashboard", "nca_api_section", "openai_api_key", "OpenAI API Key", "password", "");
-        $this->add_field("nca-dashboard", "nca_api_section", "gemini_api_key", "Gemini API Key", "password", "");
+        $this->add_field("nca-dashboard", "nca_api_section", "openai_api_key", "OpenAI API Key", "password", "Get your key at: <a href=\"https://platform.openai.com/api-keys\" target=\"_blank\">https://platform.openai.com/api-keys</a>");
+        $this->add_field("nca-dashboard", "nca_api_section", "gemini_api_key", "Gemini API Key", "password", "Get your key at: <a href=\"https://aistudio.google.com/app/apikey\" target=\"_blank\">https://aistudio.google.com/app/apikey</a>");
         $this->add_field("nca-dashboard", "nca_api_section", "telegram_bot_token", "Telegram Bot Token", "password", "");
         $this->add_field("nca-dashboard", "nca_api_section", "telegram_chat_id", "Telegram Chat ID", "text", "");
 
@@ -242,15 +243,14 @@ class NCA_Admin {
         $this->add_field("nca-taxonomy", "nca_taxonomy_section", "category_id", "Default Category ID", "number", "");
         $this->add_field("nca-taxonomy", "nca_taxonomy_section", "default_tags", "Default Tags", "text", "Comma separated tags.");
 
-        
         add_settings_section( "nca_media_section", "", null, "nca-media" );
         $this->add_field("nca-media", "nca_media_section", "image_source", "Featured Image Source", "select", "Where should the plugin get featured images?", array(
             "pollinations" => "AI Generated (Pollinations - Free)",
             "pexels" => "Pexels (Requires API Key)",
             "pixabay" => "Pixabay (Requires API Key)"
         ));
-        $this->add_field("nca-media", "nca_media_section", "pexels_api_key", "Pexels API Key", "password", "Required if using Pexels.");
-        $this->add_field("nca-media", "nca_media_section", "pixabay_api_key", "Pixabay API Key", "password", "Required if using Pixabay.");
+        $this->add_field("nca-media", "nca_media_section", "pexels_api_key", "Pexels API Key", "password", "Get your key at: <a href=\"https://www.pexels.com/api/\" target=\"_blank\">https://www.pexels.com/api/</a>");
+        $this->add_field("nca-media", "nca_media_section", "pixabay_api_key", "Pixabay API Key", "password", "Get your key at: <a href=\"https://pixabay.com/api/docs/\" target=\"_blank\">https://pixabay.com/api/docs/</a>");
 
         add_settings_section( "nca_schedule_section", "", null, "nca-schedule" );
         $this->add_field("nca-schedule", "nca_schedule_section", "auto_fetch_enabled", "Master Switch", "checkbox", "Turn this on to enable background automated content generation.");
@@ -310,7 +310,7 @@ class NCA_Admin {
             }
             echo "</select>";
         }
-        if ( !empty($desc) ) echo "<span class=\"wca-description\">" . esc_html($desc) . "</span>";
+        if ( !empty($desc) ) echo "<span class=\"wca-description\">" . wp_kses_post($desc) . "</span>";
     }
 }
 new NCA_Admin();
