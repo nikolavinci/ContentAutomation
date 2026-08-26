@@ -65,8 +65,7 @@ class NCA_Engine {
         }
         $article['category_id'] = isset( $options['category_id'] ) ? intval($options['category_id']) : 1;
 
-        $image_prompt = urlencode( 'high quality editorial photo representing ' . $article['title'] . ' without text' );
-        $article['featured_image_url'] = 'https://image.pollinations.ai/prompt/' . $image_prompt . '?width=1280&height=720&nologo=true';
+        $article['featured_image_url'] = $this->get_featured_image_url( $article['title'], $options );
 
         $pub_result = $this->publisher->publish( $article, true );
         
@@ -112,6 +111,38 @@ TAGS: <Comma separated list of relevant tags>
 Use standard HTML tags (<h2>, <h3>, <p>, <strong>, etc.) for proper formatting. Do NOT use markdown. Make sure the content flows logically with well-spaced paragraphs.
 
 CRITICAL INSTRUCTION: You must write the entire article, including the headline and metadata, exclusively in {$language}.";
+    }
+
+    private function get_featured_image_url( $title, $options ) {
+        $source = isset($options['image_source']) ? $options['image_source'] : 'pollinations';
+        
+        $search_query = urlencode(implode(' ', array_slice(str_word_count($title, 1), 0, 4)));
+
+        if ( $source === 'pexels' && !empty($options['pexels_api_key']) ) {
+            $url = "https://api.pexels.com/v1/search?query={$search_query}&per_page=1&orientation=landscape";
+            $response = wp_remote_get( $url, array(
+                "headers" => array( "Authorization" => $options['pexels_api_key'] ),
+                "timeout" => 15
+            ));
+            if ( ! is_wp_error( $response ) ) {
+                $body = json_decode( wp_remote_retrieve_body( $response ), true );
+                if ( !empty($body['photos'][0]['src']['large']) ) {
+                    return $body['photos'][0]['src']['large'];
+                }
+            }
+        } elseif ( $source === 'pixabay' && !empty($options['pixabay_api_key']) ) {
+            $url = "https://pixabay.com/api/?key=" . $options['pixabay_api_key'] . "&q={$search_query}&image_type=photo&orientation=horizontal&per_page=3";
+            $response = wp_remote_get( $url, array("timeout" => 15) );
+            if ( ! is_wp_error( $response ) ) {
+                $body = json_decode( wp_remote_retrieve_body( $response ), true );
+                if ( !empty($body['hits'][0]['largeImageURL']) ) {
+                    return $body['hits'][0]['largeImageURL'];
+                }
+            }
+        }
+        
+        $image_prompt = urlencode( 'high quality editorial photo representing ' . $title . ' without text' );
+        return 'https://image.pollinations.ai/prompt/' . $image_prompt . '?width=1280&height=720&nologo=true';
     }
 
     private function parse_generated_content( $raw_content ) {
