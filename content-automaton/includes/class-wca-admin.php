@@ -80,6 +80,7 @@ class NCA_Admin {
         add_submenu_page( "nca-dashboard", "RSS Feeds", "RSS Feeds", "manage_options", "nca-feeds", array( $this, "create_feeds_page" ) );
         add_submenu_page( "nca-dashboard", "Taxonomy & SEO", "Taxonomy & SEO", "manage_options", "nca-taxonomy", array( $this, "create_taxonomy_page" ) );
         add_submenu_page( "nca-dashboard", "Automation Schedule", "Automation Schedule", "manage_options", "nca-schedule", array( $this, "create_schedule_page" ) );
+        add_submenu_page( "nca-dashboard", "Media & Images", "Media & Images", "manage_options", "nca-media", array( $this, "create_media_page" ) );
         add_submenu_page( "nca-dashboard", "AI Content Library", "AI Content Library", "manage_options", "nca-content", array( $this, "create_content_page" ) );
         add_submenu_page( "nca-dashboard", "Crawled History", "Crawled History", "manage_options", "nca-history", array( $this, "create_history_page" ) );
         add_submenu_page( "nca-dashboard", "Logs & Usage", "Logs & Usage", "manage_options", "nca-logs", array( $this, "create_logs_page" ) );
@@ -89,6 +90,8 @@ class NCA_Admin {
     public function create_feeds_page() { $this->render_form("nca-feeds", "Content Sources", "Tell the engine where to find inspiration."); }
     public function create_taxonomy_page() { $this->render_form("nca-taxonomy", "Categories, SEO & Language", "Set up formatting, languages, and category mappings."); }
     public function create_schedule_page() { $this->render_form("nca-schedule", "Automation Settings", "Control when and how often the AI should run."); }
+
+    public function create_media_page() { $this->render_form("nca-media", "Media & Images", "Configure AI image generation or connect stock photo libraries."); }
 
     public function create_history_page() {
         ?>
@@ -238,6 +241,16 @@ class NCA_Admin {
         $this->add_field("nca-taxonomy", "nca_taxonomy_section", "target_language", "Target Language", "datalist", "Type to search or select a language.");
         $this->add_field("nca-taxonomy", "nca_taxonomy_section", "category_id", "Default Category ID", "number", "");
         $this->add_field("nca-taxonomy", "nca_taxonomy_section", "default_tags", "Default Tags", "text", "Comma separated tags.");
+
+        
+        add_settings_section( "nca_media_section", "", null, "nca-media" );
+        $this->add_field("nca-media", "nca_media_section", "image_source", "Featured Image Source", "select", "Where should the plugin get featured images?", array(
+            "pollinations" => "AI Generated (Pollinations - Free)",
+            "pexels" => "Pexels (Requires API Key)",
+            "pixabay" => "Pixabay (Requires API Key)"
+        ));
+        $this->add_field("nca-media", "nca_media_section", "pexels_api_key", "Pexels API Key", "password", "Required if using Pexels.");
+        $this->add_field("nca-media", "nca_media_section", "pixabay_api_key", "Pixabay API Key", "password", "Required if using Pixabay.");
 
         add_settings_section( "nca_schedule_section", "", null, "nca-schedule" );
         $this->add_field("nca-schedule", "nca_schedule_section", "auto_fetch_enabled", "Master Switch", "checkbox", "Turn this on to enable background automated content generation.");
